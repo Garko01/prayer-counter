@@ -90,10 +90,13 @@ export default function App(){
   }
 
   function increment(step = 1) {
+    if (settings.vibrate && 'vibrate' in navigator) navigator.vibrate(settings.vibrateMs)
     setCount(c => Math.max(0, c + step))
   }
 
   function decrement(step = 1) {
+    if (settings.hapticsOnDecrement && 'vibrate' in navigator)
+    navigator.vibrate(settings.vibrateMs)
     setCount(c => Math.max(0, c - step))
   }
 
@@ -109,7 +112,7 @@ export default function App(){
       return { ...h, [key]: { date: key, total: count } }
     })
 
-    vibrate()
+    // vibrate()
   }, [count])
 
 

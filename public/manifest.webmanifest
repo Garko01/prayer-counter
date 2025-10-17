@@ -1,6 +1,6 @@
 {
-  "name": "Minimal Japa Counter",
-  "short_name": "Japa",
+  "name": "佛珠数器",
+  "short_name": "佛珠数器",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0a0a0a",

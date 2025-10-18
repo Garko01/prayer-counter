@@ -227,7 +227,7 @@ export default function App(){
   return (
     <div className="wrap">
       <header className="toolbar">
-        <div className="pill">连续 <strong>{streak}</strong> 天</div>
+        <div className="pill">连续 <strong translate="no">{streak}</strong> 天</div>
         <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap'}}>
           <button
             className="icon-btn"
@@ -253,7 +253,7 @@ export default function App(){
 
       <main className="card">
         <div className="display" aria-live="polite" role="status">
-          <span>{count}</span>
+          <span translate="no">{count}</span>
         </div>
 
         <div className="counter-layout">

@@ -71,10 +71,20 @@ type HoldState = { delay: number | null; repeat: number | null }
 
 function BeadTrack({ count, direction }: { count: number; direction: 'inc' | 'dec' }) {
   const beadsContainer = useRef<HTMLDivElement>(null)
-  const beadGap = 40
+  const beadGapRef = useRef(40)          // ← dynamic gap
   const beadCount = 5
   const isAnimatingRef = useRef(false)
   const offsetRef = useRef(0)
+
+  // Measure the actual visual gap between two adjacent beads
+  function measureGap() {
+    const el = beadsContainer.current
+    if (!el || el.children.length < 2) return
+    const a = el.children[0] as HTMLElement
+    const b = el.children[1] as HTMLElement
+    const gap = Math.round(b.getBoundingClientRect().left - a.getBoundingClientRect().left)
+    if (Number.isFinite(gap) && gap !== 0) beadGapRef.current = gap
+  }
 
   // Create beads initially
   useEffect(() => {
@@ -86,7 +96,21 @@ function BeadTrack({ count, direction }: { count: number; direction: 'inc' | 'de
       bead.className = 'bead'
       container.appendChild(bead)
     }
+    measureGap()      // ← measure once after mounting
     applyGlow(0)
+  }, [])
+
+  // Re-measure on resize / orientation change
+  useEffect(() => {
+    const el = beadsContainer.current
+    if (!el) return
+    const ro = new ResizeObserver(() => measureGap())
+    ro.observe(el)
+    window.addEventListener('resize', measureGap)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', measureGap)
+    }
   }, [])
 
   // React to count changes
@@ -103,16 +127,13 @@ function BeadTrack({ count, direction }: { count: number; direction: 'inc' | 'de
 
     const mid = Math.floor((beads.length - 1) / 2)
 
-    // Highlight center if count is exactly 0
     if (current === 0) {
       beads[mid]?.classList.add('glow')
       return
     }
-
-    // Glow for the 108th-cycle window: 106..110 → -2,-1,0,+1,+2 around center
     const remainder = ((current - 106) % 108 + 108) % 108 + 106
     if (remainder >= 106 && remainder <= 110) {
-      const glowOffset = remainder - 108 // 106→-2, 107→-1, 108→0, 109→+1, 110→+2
+      const glowOffset = remainder - 108
       const idx = mid + glowOffset
       if (idx >= 0 && idx < beads.length) beads[idx].classList.add('glow')
     }
@@ -125,6 +146,7 @@ function BeadTrack({ count, direction }: { count: number; direction: 'inc' | 'de
     const container = beadsContainer.current
     if (!container) return
 
+    const beadGap = beadGapRef.current        // ← use measured gap
     const delta = dir === 'inc' ? beadGap : -beadGap
     const nextOffset = offsetRef.current + delta
 
@@ -134,7 +156,6 @@ function BeadTrack({ count, direction }: { count: number; direction: 'inc' | 'de
     const handleEnd = () => {
       if (!container) return
 
-      // recycle bead
       if (dir === 'inc') {
         const last = container.lastElementChild
         if (last) container.insertBefore(last, container.firstElementChild)
@@ -143,11 +164,10 @@ function BeadTrack({ count, direction }: { count: number; direction: 'inc' | 'de
         if (first) container.appendChild(first)
       }
 
-      // reset transform
       offsetRef.current = 0
       container.style.transition = 'none'
       container.style.transform = `translate(-50%, -50%) translateX(${offsetRef.current}px)`
-      void container.offsetWidth // force reflow
+      void container.offsetWidth
 
       applyGlow(count)
       isAnimatingRef.current = false

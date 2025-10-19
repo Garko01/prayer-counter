@@ -355,3 +355,91 @@ button:active {
   transform: scale(1.25);
   z-index: 2;
 }
+
+:root{
+  /* scale size + spacing but keep the same proportions */
+  --beadCount: 5;
+  --beadSize: clamp(22px, 5.5vw, 30px); /* was 30px */
+  --beadGap:  clamp(26px, 7.3vw, 40px); /* was 40px */
+
+  /* a few pixels of invisible padding so mask won't eat edge beads */
+  --edgeSlack: 8px;
+
+  /* computed total width of the beads row */
+  --trackInnerW: calc(
+    var(--beadCount) * var(--beadSize) +
+    (var(--beadCount) - 1) * var(--beadGap)
+  );
+}
+
+/* Make the track shrink on small screens and add invisible side slack */
+.track{
+  width: min(100%, calc(var(--trackInnerW) + 2 * var(--edgeSlack)));
+  padding-inline: var(--edgeSlack);       /* keeps the visual look identical */
+  margin-inline: auto;
+  overflow: visible;                       /* already set in your code */
+  /* keep your existing mask — it now has room so it won’t clip */
+}
+
+/* Drive the beads from the responsive vars */
+.beads{
+  gap: var(--beadGap);
+}
+
+.bead{
+  width: var(--beadSize);
+  height: var(--beadSize);
+}
+
+/* 1) Lock the app to the dynamic viewport height on mobile */
+@media (max-width: 600px) {
+  html, body { height: 100%; }
+  body { min-height: 100dvh; overflow: hidden; }  /* no vertical scroll jump */
+
+  /* App column fills exactly the viewport */
+  .wrap{
+    min-height: 100dvh;
+    display: grid;
+    grid-template-rows:
+      auto      /* toolbar / streak row */
+      auto      /* track row */
+      auto      /* display row */
+      1fr       /* counter (grows/shrinks) */
+      auto;     /* anything at bottom */
+    gap: clamp(8px, 1.6dvh, 16px);
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  /* 2) Keep your current "look" but scale it with viewport height */
+  .track{
+    margin-top: clamp(2px, 0.8dvh, 8px);
+    margin-bottom: clamp(-10px, -1.6dvh, -6px);
+  }
+
+  .display{
+    font-size: clamp(56px, 12dvh, 140px);
+    padding: clamp(12px, 2.8dvh, 24px) 12px clamp(8px, 2.2dvh, 16px);
+  }
+
+  /* 3) Buttons scale to fit without changing behavior */
+  .btn-huge{
+    height: clamp(72px, 14dvh, 120px);
+    font-size: clamp(28px, 9.5dvh, 80px);
+    border-radius: clamp(16px, 3dvh, 24px);
+  }
+
+  .counter-sub{
+    width: min(100%, 320px);
+    gap: clamp(8px, 1.6dvh, 12px);
+  }
+  .btn-small{
+    font-size: clamp(18px, 3.5dvh, 32px);
+    padding-block: clamp(8px, 1.8dvh, 14px);
+    border-radius: clamp(10px, 2dvh, 16px);
+  }
+
+  /* 4) History/overlay areas keep internal scroll without growing the page */
+  .history{ max-height: min(35dvh, 280px); overflow: auto; }
+  .overlay{ inset: 0; height: 100dvh; }
+  .overlay-card{ max-height: min(80dvh, 560px); }
+}

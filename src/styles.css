@@ -298,7 +298,7 @@ button:active {
 .track {
   position: relative;
   width: 310px;
-  height: 160px; /* 🔹 increased height so glow has space */
+  height: clamp(180px, 22dvh, 220px);
   overflow: visible; /* let top/bottom glow show */
   margin: 0 auto;
   margin-top: 8px;
@@ -359,8 +359,8 @@ button:active {
 :root{
   /* scale size + spacing but keep the same proportions */
   --beadCount: 5;
-  --beadSize: clamp(22px, 5.5vw, 30px); /* was 30px */
-  --beadGap:  clamp(26px, 7.3vw, 40px); /* was 40px */
+  --beadSize: clamp(20px, 4.6dvh, 32px);
+  --beadGap: clamp(22px, 5.2dvh, 32px);
 
   /* a few pixels of invisible padding so mask won't eat edge beads */
   --edgeSlack: 8px;
@@ -389,6 +389,7 @@ button:active {
 .bead{
   width: var(--beadSize);
   height: var(--beadSize);
+  margin-inline: -3px; /* reduces perceived gap while keeping animation step aligned */
 }
 
 /* 1) Lock the app to the dynamic viewport height on mobile */
